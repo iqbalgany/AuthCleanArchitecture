@@ -8,7 +8,7 @@ class UserModel extends UserEntity {
   });
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{'uid': uid, 'email': email, 'fullName': fullName};
+    return {'uid': uid, 'email': email, 'fullName': fullName};
   }
 
   factory UserModel.fromMap(Map<String, dynamic> map) {

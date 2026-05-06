@@ -53,8 +53,8 @@ class AuthRemoteDatasource {
           .set(userModel.toMap());
 
       return userModel;
-    } on FirebaseException catch (e) {
-      throw e.message ?? 'An error occured during login';
+    } on FirebaseAuthException catch (e) {
+      throw e.message ?? 'Registration failed';
     } catch (e) {
       throw 'An unexpected error occurred';
     }

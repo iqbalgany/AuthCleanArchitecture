@@ -29,7 +29,7 @@ Future<void> setup() async {
   );
   getIt.registerLazySingleton(() => LogoutAuthUseCase(authRepository: getIt()));
 
-  getIt.registerFactory(
+  getIt.registerFactory<AuthCubit>(
     () => AuthCubit(
       loginAuthUseCase: getIt(),
       registerAuthUseCase: getIt(),

@@ -1,5 +1,4 @@
 import 'package:auth_clean_architecture/features/auth/presentation/cubits/auth_cubit.dart';
-import 'package:auth_clean_architecture/features/auth/presentation/pages/register_page.dart';
 import 'package:auth_clean_architecture/features/auth/presentation/widgets/custom_button.dart';
 import 'package:auth_clean_architecture/features/auth/presentation/widgets/custom_text_field.dart';
 import 'package:auth_clean_architecture/features/home/presentations/pages/home_page.dart';
@@ -8,13 +7,14 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
+class RegisterPage extends StatelessWidget {
+  RegisterPage({super.key});
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final email = TextEditingController();
   final password = TextEditingController();
+  final fullName = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class LoginPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Login',
+                  'Register',
                   style: TextStyle(
                     color: Colors.indigo,
                     fontWeight: FontWeight.bold,
@@ -36,6 +36,20 @@ class LoginPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 30),
+
+                CustomTextField(
+                  hint: 'Full Name',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'The full name field cannot be left blank';
+                    }
+                    if (value.length < 3) {
+                      return 'The name must be at least 3 characters long';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 20),
 
                 CustomTextField(
                   hint: 'Email',
@@ -82,13 +96,14 @@ class LoginPage extends StatelessWidget {
                   child: CustomButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        context.read<AuthCubit>().login(
+                        context.read<AuthCubit>().register(
                           email.text.trim(),
                           password.text.trim(),
+                          fullName.text.trim(),
                         );
                       }
                     },
-                    text: 'Login',
+                    text: 'Register',
                   ),
                 ),
                 SizedBox(height: 15),
@@ -97,22 +112,17 @@ class LoginPage extends StatelessWidget {
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: 'Don\'t have an account? ',
+                        text: 'Do you have an account? ',
                         style: TextStyle(
                           color: Colors.black26,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       TextSpan(
-                        text: 'Register',
+                        text: 'Login',
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => RegisterPage(),
-                              ),
-                            );
+                            Navigator.pop(context);
                           },
                         style: TextStyle(
                           color: Colors.indigoAccent,
