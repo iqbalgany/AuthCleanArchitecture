@@ -1,8 +1,6 @@
 import 'package:auth_clean_architecture/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:auth_clean_architecture/features/auth/presentation/widgets/custom_button.dart';
 import 'package:auth_clean_architecture/features/auth/presentation/widgets/custom_text_field.dart';
-import 'package:auth_clean_architecture/features/home/presentations/pages/home_page.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -85,12 +83,16 @@ class RegisterPage extends StatelessWidget {
 
                 BlocListener<AuthCubit, AuthState>(
                   listener: (context, state) {
-                    if (state.status == AuthStatus.authenticated) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        CupertinoPageRoute(builder: (context) => HomePage()),
-                        (route) => false,
+                    if (state is AuthRegisterSuccess) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Registration successful. Please log in.',
+                          ),
+                          backgroundColor: Colors.green,
+                        ),
                       );
+                      Navigator.pop(context);
                     }
                   },
                   child: CustomButton(

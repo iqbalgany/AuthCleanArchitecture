@@ -2,8 +2,6 @@ import 'package:auth_clean_architecture/features/auth/presentation/cubits/auth_c
 import 'package:auth_clean_architecture/features/auth/presentation/pages/register_page.dart';
 import 'package:auth_clean_architecture/features/auth/presentation/widgets/custom_button.dart';
 import 'package:auth_clean_architecture/features/auth/presentation/widgets/custom_text_field.dart';
-import 'package:auth_clean_architecture/features/home/presentations/pages/home_page.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -69,27 +67,16 @@ class LoginPage extends StatelessWidget {
                 ),
                 SizedBox(height: 40),
 
-                BlocListener<AuthCubit, AuthState>(
-                  listener: (context, state) {
-                    if (state.status == AuthStatus.authenticated) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        CupertinoPageRoute(builder: (context) => HomePage()),
-                        (route) => false,
+                CustomButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      context.read<AuthCubit>().login(
+                        email.text.trim(),
+                        password.text.trim(),
                       );
                     }
                   },
-                  child: CustomButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        context.read<AuthCubit>().login(
-                          email.text.trim(),
-                          password.text.trim(),
-                        );
-                      }
-                    },
-                    text: 'Login',
-                  ),
+                  text: 'Login',
                 ),
                 SizedBox(height: 15),
 
