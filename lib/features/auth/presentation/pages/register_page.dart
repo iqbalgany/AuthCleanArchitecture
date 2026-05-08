@@ -94,6 +94,14 @@ class RegisterPage extends StatelessWidget {
                       );
                       Navigator.pop(context);
                     }
+                    if (state is AuthFailure) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.message),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   },
                   child: CustomButton(
                     onPressed: () {

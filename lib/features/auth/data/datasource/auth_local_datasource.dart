@@ -1,81 +1,75 @@
 import 'dart:convert';
 
-import 'package:auth_clean_architecture/features/auth/data/models/user_model.dart';
 import 'package:crypto/crypto.dart';
-import 'package:hive/hive.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthLocalDatasource {
-  final String _boxName = 'userBox';
+  final String _userKey = 'registered_users';
+  final String _sessionKey = 'user_token';
+  final String _userDataKey = 'current_user_data';
 
-  String _hashPassword(String password) {
-    return sha256.convert(utf8.encode(password)).toString();
+  String _hashPassword(String password) =>
+      sha256.convert(utf8.encode(password)).toString();
+
+  Future<void> register(String email, String password, String fullName) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    String? usersJson = prefs.getString(_userKey);
+    Map<String, dynamic> users = usersJson != null ? jsonDecode(usersJson) : {};
+
+    if (users.containsKey(email)) {
+      throw 'Your email address has been registered!';
+    }
+
+    users[email] = {
+      'email': email,
+      'password': _hashPassword(password),
+      'fullName': fullName,
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+    };
+
+    await prefs.setString(_userKey, jsonEncode(users));
   }
 
-  Future<UserModel> register(
-    String email,
-    String password,
-    String fullName,
-  ) async {
-    try {
-      var box = await Hive.openBox<UserModel>(_boxName);
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    final prefs = await SharedPreferences.getInstance();
 
-      if (box.containsKey(email)) {
-        throw 'Email already registered!';
-      }
+    String? usersJson = prefs.getString(_userKey);
+    if (usersJson == null) throw 'No users have registered yet!';
 
-      final newUser = UserModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        email: email,
-        fullName: fullName,
-        password: _hashPassword(password),
-      );
+    Map<String, dynamic> users = jsonDecode(usersJson);
 
-      await box.put(email, newUser);
-
-      // await box.put('currentUser', newUser);
-
-      return newUser;
-    } catch (e) {
-      throw e.toString();
+    if (!users.containsKey(email)) {
+      throw 'Email not found!';
     }
+
+    var userData = users[email];
+
+    if (userData['password'] != _hashPassword(password)) {
+      throw 'Incorrect password!';
+    }
+
+    String fakeToken = 'token_${DateTime.now().millisecondsSinceEpoch}';
+
+    await prefs.setString(_sessionKey, fakeToken);
+
+    await prefs.setString(_userDataKey, jsonEncode(userData));
+
+    return userData;
   }
 
-  Future<UserModel> login(String email, String password) async {
-    try {
-      var box = await Hive.openBox<UserModel>(_boxName);
-
-      await box.delete('currentUser');
-
-      final user = box.get(email);
-
-      if (user == null) {
-        throw 'Your email address is not registered! Please register first.';
-      }
-
-      if (user.password != _hashPassword(password)) {
-        throw 'Invalid email or password. Please try again.';
-      }
-
-      await box.put('currentUser', user);
-      return user;
-    } catch (e) {
-      throw e.toString();
+  Future<Map<String, dynamic>?> getSavedUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? userDataJson = prefs.getString(_userDataKey);
+    if (userDataJson != null) {
+      return jsonDecode(userDataJson) as Map<String, dynamic>;
     }
+    return null;
   }
 
   Future<void> logout() async {
-    try {
-      var box = await Hive.openBox<UserModel>(_boxName);
-      await box.delete('currentUser');
-      await box.flush();
-    } catch (e) {
-      throw 'Failed to log out';
-    }
-  }
-
-  Future<UserModel?> getCurrentUser() async {
-    var box = await Hive.openBox<UserModel>(_boxName);
-    final user = box.get('currentUser');
-    return user;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_sessionKey);
+    await prefs.remove(_userDataKey);
   }
 }

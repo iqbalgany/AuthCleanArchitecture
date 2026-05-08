@@ -10,10 +10,23 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserEntity> login(String email, String password) async {
     try {
-      final user = await authLocalDatasource.login(email, password);
-      return user;
+      final userData = await authLocalDatasource.login(email, password);
+      return UserEntity(
+        id: userData['id'],
+        email: userData['email'],
+        fullName: userData['fullName'],
+      );
     } catch (e) {
-      throw e.toString();
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> register(String email, String password, String fullName) async {
+    try {
+      await authLocalDatasource.register(email, password, fullName);
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -22,36 +35,20 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await authLocalDatasource.logout();
     } catch (e) {
-      throw e.toString();
-    }
-  }
-
-  @override
-  Future<UserEntity> register(
-    String email,
-    String password,
-    String fullName,
-  ) async {
-    try {
-      final user = await authLocalDatasource.register(
-        email,
-        password,
-        fullName,
-      );
-      return user;
-    } catch (e) {
-      throw e.toString();
+      rethrow;
     }
   }
 
   @override
   Future<UserEntity?> getCurrentUser() async {
-    try {
-      final user = await authLocalDatasource.getCurrentUser();
-
-      return user;
-    } catch (e) {
-      throw e.toString();
+    final userData = await authLocalDatasource.getSavedUser();
+    if (userData != null) {
+      return UserEntity(
+        id: userData['id'],
+        email: userData['email'],
+        fullName: userData['fullName'],
+      );
     }
+    return null;
   }
 }

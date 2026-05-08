@@ -69,11 +69,14 @@ class LoginPage extends StatelessWidget {
 
                 CustomButton(
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      context.read<AuthCubit>().login(
-                        email.text.trim(),
-                        password.text.trim(),
-                      );
+                    if (email.text.trim().isNotEmpty &&
+                        password.text.trim().isNotEmpty) {
+                      if (_formKey.currentState!.validate()) {
+                        context.read<AuthCubit>().login(
+                          email.text.trim(),
+                          password.text.trim(),
+                        );
+                      }
                     }
                   },
                   text: 'Login',
